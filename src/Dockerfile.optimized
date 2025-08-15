@@ -1,0 +1,67 @@
+# syntax=docker/dockerfile:1.5
+# Enable BuildKit features for better caching and performance
+
+# ============================================
+# Stage 1: Dependencies Cache
+# ============================================
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+# Copy only package files for better cache utilization
+COPY package*.json yarn.lock* pnpm-lock.yaml* ./
+
+# Use cache mounts for package managers
+RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=cache,target=/root/.yarn \
+    --mount=type=cache,target=/root/.pnpm-store \
+    if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
+    elif [ -f package-lock.json ]; then npm ci; \
+    elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm install --frozen-lockfile; \
+    else npm install; fi
+
+# ============================================
+# Stage 2: Builder
+# ============================================
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Copy dependencies from previous stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Build application with cache mount for build artifacts
+RUN --mount=type=cache,target=/app/.next/cache \
+    --mount=type=cache,target=/app/.turbo \
+    npm run build
+
+# Remove development dependencies
+RUN npm prune --production
+
+# ============================================
+# Stage 3: Production Image
+# ============================================
+FROM gcr.io/distroless/nodejs20-debian12 AS runner
+WORKDIR /app
+
+# Set production environment
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Copy only necessary files from builder
+COPY --from=builder --chown=nonroot:nonroot /app/public ./public
+COPY --from=builder --chown=nonroot:nonroot /app/.next/standalone ./
+COPY --from=builder --chown=nonroot:nonroot /app/.next/static ./.next/static
+
+# Use non-root user
+USER nonroot
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD node healthcheck.js
+
+# Start application
+ENTRYPOINT ["node"]
+CMD ["server.js"]

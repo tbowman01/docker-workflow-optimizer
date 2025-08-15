@@ -1,0 +1,109 @@
+version: '3.9'
+
+x-build-args: &build-args
+  BUILDKIT_INLINE_CACHE: 1
+  BUILDKIT_MULTI_PLATFORM: 1
+
+x-cache-from: &cache-from
+  - type=gha
+  - type=registry,ref=${REGISTRY:-ghcr.io}/${IMAGE_NAME:-myapp}:buildcache
+  - type=registry,ref=${REGISTRY:-ghcr.io}/${IMAGE_NAME:-myapp}:latest
+
+x-cache-to: &cache-to
+  - type=gha,mode=max
+  - type=registry,ref=${REGISTRY:-ghcr.io}/${IMAGE_NAME:-myapp}:buildcache,mode=max
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: src/Dockerfile.optimized
+      args:
+        <<: *build-args
+      cache_from: *cache-from
+      cache_to: *cache-to
+      target: ${BUILD_TARGET:-runner}
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-myapp}:${TAG:-latest}
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    networks:
+      - app-network
+
+  # Development build with hot reload
+  app-dev:
+    build:
+      context: .
+      dockerfile: src/Dockerfile.optimized
+      target: builder
+      args:
+        <<: *build-args
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - build-cache:/app/.next/cache
+      - turbo-cache:/app/.turbo
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+    command: npm run dev
+    networks:
+      - app-network
+
+  # Build cache warmer service
+  cache-warmer:
+    build:
+      context: .
+      dockerfile: src/Dockerfile.optimized
+      target: deps
+    command: echo "Cache warmed"
+    profiles:
+      - cache
+
+  # Registry proxy for faster pulls
+  registry-proxy:
+    image: registry:2
+    environment:
+      REGISTRY_PROXY_REMOTEURL: https://registry-1.docker.io
+      REGISTRY_STORAGE_CACHE_BLOBDESCRIPTOR: inmemory
+    ports:
+      - "5000:5000"
+    volumes:
+      - registry-cache:/var/lib/registry
+    profiles:
+      - proxy
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  build-cache:
+    driver: local
+  turbo-cache:
+    driver: local
+  registry-cache:
+    driver: local
