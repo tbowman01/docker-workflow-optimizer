@@ -54,7 +54,7 @@ jobs:
           driver-opts: |
             network=host
             image=moby/buildkit:v0.12.0
-          config-inline: |
+          buildkitd-config-inline: |
             [worker.oci]
               max-parallelism = 4
             [registry."docker.io"]
@@ -95,7 +95,7 @@ jobs:
           cache-to: |
             type=gha,mode=max,scope=${{ matrix.platform }}
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache-${{ matrix.platform }},mode=max
-          outputs: type=docker,dest=/tmp/image-${{ matrix.platform }}.tar
+          outputs: type=docker,dest=/tmp/image-${{ github.run_id }}-${{ strategy.job-index }}.tar
           build-args: |
             BUILDKIT_INLINE_CACHE=1
             BUILDKIT_MULTI_PLATFORM=1
@@ -103,8 +103,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: image-${{ matrix.platform }}
-          path: /tmp/image-${{ matrix.platform }}.tar
+          name: image-${{ github.run_id }}-${{ strategy.job-index }}
+          path: /tmp/image-${{ github.run_id }}-${{ strategy.job-index }}.tar
           retention-days: 1
 
   # Job 3: Security scanning in parallel
