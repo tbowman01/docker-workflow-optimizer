@@ -1,0 +1,59 @@
+# syntax=docker/dockerfile:1.5
+# Demo optimized Dockerfile for Express.js app
+
+# ============================================
+# Stage 1: Dependencies Cache
+# ============================================
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+# Copy only package files for better cache utilization
+COPY package*.json ./
+
+# Use cache mounts for package managers
+RUN --mount=type=cache,target=/root/.npm \
+    npm install --only=production && \
+    npm cache clean --force
+
+# ============================================
+# Stage 2: Builder
+# ============================================
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Copy dependencies from previous stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Build application with cache mount for build artifacts
+RUN --mount=type=cache,target=/app/.npm-cache \
+    npm run build
+
+# ============================================
+# Stage 3: Production Image
+# ============================================
+FROM gcr.io/distroless/nodejs20-debian12 AS runner
+WORKDIR /app
+
+# Set production environment
+ENV NODE_ENV=production
+
+# Copy only necessary files from builder
+COPY --from=deps --chown=nonroot:nonroot /app/node_modules ./node_modules
+COPY --from=builder --chown=nonroot:nonroot /app/server.js ./server.js
+COPY --from=builder --chown=nonroot:nonroot /app/healthcheck.js ./healthcheck.js
+COPY --from=builder --chown=nonroot:nonroot /app/package.json ./package.json
+
+# Use non-root user
+USER nonroot
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD node healthcheck.js
+
+# Start application
+ENTRYPOINT ["node"]
+CMD ["server.js"]

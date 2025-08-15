@@ -1,0 +1,89 @@
+{
+  "timestamp": "2025-08-15T09:58:04.140913",
+  "registry": "ghcr.io",
+  "image": "myapp",
+  "summary": {
+    "total_builds": 4,
+    "average_build_time": 0.0,
+    "average_cache_efficiency": 0.0,
+    "average_image_size": 0.0,
+    "average_push_time": 0.0
+  },
+  "detailed_metrics": {
+    "builds": [
+      {
+        "timestamp": "2025-08-15T09:56:03.966422",
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "layers_built": 0,
+        "layers_cached": 0,
+        "build_time": 0,
+        "image_size": 0
+      },
+      {
+        "timestamp": "2025-08-15T09:56:34.139077",
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "layers_built": 0,
+        "layers_cached": 0,
+        "build_time": 0,
+        "image_size": 0
+      },
+      {
+        "timestamp": "2025-08-15T09:57:04.144193",
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "layers_built": 0,
+        "layers_cached": 0,
+        "build_time": 0,
+        "image_size": 0
+      },
+      {
+        "timestamp": "2025-08-15T09:57:34.150396",
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "layers_built": 0,
+        "layers_cached": 0,
+        "build_time": 0,
+        "image_size": 0
+      }
+    ],
+    "cache_hits": [],
+    "layer_reuse": [],
+    "push_times": [
+      {
+        "timestamp": "2025-08-15T09:56:03.966534",
+        "push_time": 0,
+        "pull_time": 0,
+        "bandwidth_mbps": 0
+      },
+      {
+        "timestamp": "2025-08-15T09:56:34.139123",
+        "push_time": 0,
+        "pull_time": 0,
+        "bandwidth_mbps": 0
+      },
+      {
+        "timestamp": "2025-08-15T09:57:04.144264",
+        "push_time": 0,
+        "pull_time": 0,
+        "bandwidth_mbps": 0
+      },
+      {
+        "timestamp": "2025-08-15T09:57:34.150444",
+        "push_time": 0,
+        "pull_time": 0,
+        "bandwidth_mbps": 0
+      }
+    ],
+    "image_sizes": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "recommendations": [
+    "Cache efficiency is below 70%. Consider optimizing Dockerfile layer ordering."
+  ]
+}

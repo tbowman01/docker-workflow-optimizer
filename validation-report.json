@@ -1,0 +1,46 @@
+{
+    "timestamp": "2025-08-15T10:00:15-04:00",
+    "test_iterations": 3,
+    "baseline": {
+        "build_time_no_cache": [0;34m[INFO][0m Build iteration 1/3 with dockerfile: Dockerfile, cache: false
+[0;34m[INFO][0m Build 1 completed in 41.287167339s
+[0;34m[INFO][0m Build iteration 2/3 with dockerfile: Dockerfile, cache: false
+[0;34m[INFO][0m Build 2 completed in 38.125177750s
+[0;34m[INFO][0m Build iteration 3/3 with dockerfile: Dockerfile, cache: false
+[0;34m[INFO][0m Build 3 completed in 38.479789076s
+39.29,
+        "build_time_with_cache": [0;34m[INFO][0m Build iteration 1/3 with dockerfile: Dockerfile, cache: true
+[0;34m[INFO][0m Build 1 completed in 1.665929162s
+[0;34m[INFO][0m Build iteration 2/3 with dockerfile: Dockerfile, cache: true
+[0;34m[INFO][0m Build 2 completed in 2.399165012s
+[0;34m[INFO][0m Build iteration 3/3 with dockerfile: Dockerfile, cache: true
+[0;34m[INFO][0m Build 3 completed in 2.476084343s
+2.18,
+        "image_size_bytes": 1191853424,
+        "cache_efficiency_percent": 0
+    },
+    "optimized": {
+        "build_time_no_cache": [0;34m[INFO][0m Build iteration 1/3 with dockerfile: src/Dockerfile.optimized, cache: false
+[0;31m[ERROR][0m Build 1 failed
+[0;34m[INFO][0m Build iteration 2/3 with dockerfile: src/Dockerfile.optimized, cache: false
+[0;31m[ERROR][0m Build 2 failed
+[0;34m[INFO][0m Build iteration 3/3 with dockerfile: src/Dockerfile.optimized, cache: false
+[0;31m[ERROR][0m Build 3 failed
+0,
+        "build_time_with_cache": [0;34m[INFO][0m Build iteration 1/3 with dockerfile: src/Dockerfile.optimized, cache: true
+[0;31m[ERROR][0m Build 1 failed
+[0;34m[INFO][0m Build iteration 2/3 with dockerfile: src/Dockerfile.optimized, cache: true
+[0;31m[ERROR][0m Build 2 failed
+[0;34m[INFO][0m Build iteration 3/3 with dockerfile: src/Dockerfile.optimized, cache: true
+[0;31m[ERROR][0m Build 3 failed
+0,
+        "image_size_bytes": 0,
+        "cache_efficiency_percent": 0
+    },
+    "improvements": {
+        "build_time_no_cache_percent": ,
+        "build_time_with_cache_percent": ,
+        "image_size_reduction_percent": 100.0,
+        "cache_efficiency_improvement": 0
+    }
+}
